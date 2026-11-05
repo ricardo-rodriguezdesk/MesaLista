@@ -15,6 +15,7 @@ class CategoriaResource extends JsonResource
             'orden' => $this->orden,
             'activo' => $this->activo,
             'productos_count' => $this->whenCounted('productos'),
+            'productos' => ProductoResource::collection($this->whenLoaded('productos')),
         ];
     }
 }
