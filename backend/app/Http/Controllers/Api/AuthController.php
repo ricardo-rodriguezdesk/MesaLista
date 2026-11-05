@@ -16,6 +16,8 @@ class AuthController extends Controller
     /**
      * Inicio de sesión del personal con usuario y PIN.
      * Devuelve un token de acceso de Sanctum.
+     *
+     * @unauthenticated
      */
     public function login(LoginRequest $request): JsonResponse
     {
