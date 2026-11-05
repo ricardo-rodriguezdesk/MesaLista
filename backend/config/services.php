@@ -44,4 +44,10 @@ return [
         'url' => env('FRONTEND_URL', 'http://localhost:5173'),
     ],
 
+        'supabase' => [
+        'url' => env('SUPABASE_URL'),
+        'secret_key' => env('SUPABASE_SECRET_KEY'),
+        'canal' => env('SUPABASE_REALTIME_CANAL', 'mesalista'),
+    ],
+
 ];

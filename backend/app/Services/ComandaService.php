@@ -87,7 +87,7 @@ class ComandaService
             // Si ya habían pedido la cuenta y piden algo más, la cuenta se vuelve a abrir
             if ($cuenta->estado === Cuenta::CUENTA_PEDIDA) {
                 $cuenta->update(['estado' => Cuenta::ABIERTA]);
-                $cuenta->mesa()->update(['estado' => Mesa::OCUPADA]);
+                $cuenta->mesa->update(['estado' => Mesa::OCUPADA]);
             }
 
             return $this->recalcular($cuenta);
@@ -108,7 +108,7 @@ class ComandaService
             }
 
             $cuenta->update(['estado' => Cuenta::CUENTA_PEDIDA]);
-            $cuenta->mesa()->update(['estado' => Mesa::CUENTA_PEDIDA]);
+            $cuenta->mesa->update(['estado' => Mesa::CUENTA_PEDIDA]);
 
             return $cuenta;
         });
