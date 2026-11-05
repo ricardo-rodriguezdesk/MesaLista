@@ -28,3 +28,6 @@ frontend/.vite/
 # Logs
 *.log
 npm-debug.log*
+
+# Credenciales descargadas de Google Cloud
+client_secret*.json
