@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Observers\ProductoObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([ProductoObserver::class])]
 class Producto extends Model
 {
     protected $table = 'productos';
