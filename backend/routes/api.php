@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BitacoraController;
 use App\Http\Controllers\Api\CategoriaController;
 use App\Http\Controllers\Api\CroquisController;
+use App\Http\Controllers\Api\CuentaController;
 use App\Http\Controllers\Api\EmpleadoController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\MenuController;
@@ -44,6 +45,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('productos', [ProductoController::class, 'index']);
         Route::get('productos/{producto}', [ProductoController::class, 'show']);
+    });
+
+    // Meseros y caja: comandas
+    Route::middleware('rol:'.implode(',', [Rol::MESERO, Rol::CAJERO]))->group(function () {
+        Route::get('cuentas', [CuentaController::class, 'index']);
+        Route::post('cuentas', [CuentaController::class, 'store']);
+        Route::get('cuentas/{cuenta}', [CuentaController::class, 'show']);
+        Route::post('cuentas/{cuenta}/platillos', [CuentaController::class, 'agregarPlatillos']);
+        Route::post('cuentas/{cuenta}/pedir-cuenta', [CuentaController::class, 'pedirCuenta']);
     });
 
     // Solo administrador
