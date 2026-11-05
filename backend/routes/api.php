@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BitacoraController;
 use App\Http\Controllers\Api\CategoriaController;
 use App\Http\Controllers\Api\EmpleadoController;
 use App\Http\Controllers\Api\GoogleAuthController;
@@ -44,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Solo administrador
     Route::middleware('rol:'.Rol::ADMINISTRADOR)->group(function () {
         Route::get('roles', RolController::class);
+        Route::get('bitacora', BitacoraController::class);
 
         // DELETE desactiva (no borra) para conservar el historial
         Route::apiResource('empleados', EmpleadoController::class)
