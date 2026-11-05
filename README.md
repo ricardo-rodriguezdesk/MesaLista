@@ -15,7 +15,7 @@ MesaLista reemplaza un punto de venta de escritorio con una aplicación web que 
 | Capa | Tecnología |
 |------|------------|
 | Frontend | React + Vite + TypeScript (PWA) — Vercel |
-| Backend | Laravel (PHP 8), Sanctum, Socialite — Coolify |
+| Backend | Laravel 13 (PHP 8.3+), Sanctum, Socialite — Coolify |
 | Base de datos | Supabase (PostgreSQL, Realtime, Storage) |
 | Servicios externos | Facturapi (sandbox), Google OAuth 2.0, SMTP |
 
@@ -25,8 +25,58 @@ MesaLista reemplaza un punto de venta de escritorio con una aplicación web que 
 MesaLista/
 ├── backend/    API REST en Laravel
 ├── frontend/   Aplicación React
-└── docs/       Diagramas, documentación de la API y manuales
+└── docs/       Modelo de datos, especificación OpenAPI y manuales
 ```
+
+## Backend
+
+### Requisitos
+
+- PHP 8.3 o superior con las extensiones `pdo_pgsql` y `pgsql`
+- Composer 2
+- Un proyecto de Supabase (PostgreSQL)
+
+### Instalación
+
+```bash
+cd backend
+composer install
+cp .env.example .env
+php artisan key:generate
+```
+
+Configura en `.env` la conexión a Supabase (`DB_*`, usando el *Session pooler*), las credenciales de Google OAuth (`GOOGLE_*`) y el correo del administrador (`ADMIN_EMAIL`). Después:
+
+```bash
+php artisan migrate --seed
+php artisan serve
+```
+
+La API queda disponible en `http://127.0.0.1:8000/api`.
+
+### Usuarios de prueba
+
+Los crea el seeder solo en entornos que no son de producción.
+
+| Usuario | PIN | Rol |
+|---------|-----|-----|
+| admin | 1111 | administrador |
+| caja1 | 2222 | cajero |
+| mesero1 | 3333 | mesero |
+| mesero2 | 4444 | mesero |
+| cocina1 | 5555 | cocina |
+
+### Pruebas
+
+```bash
+php artisan test
+```
+
+Las pruebas usan SQLite en memoria y nunca tocan la base de datos de Supabase.
+
+### Documentación de la API
+
+Con el servidor en marcha, la documentación interactiva (OpenAPI / Swagger) está en `http://127.0.0.1:8000/docs/api`. La especificación exportada se encuentra en [`docs/openapi.json`](docs/openapi.json) y puede importarse en Postman.
 
 ## Flujo de trabajo
 
@@ -34,8 +84,4 @@ MesaLista/
 - `develop`: integración
 - `feature/<modulo>`: una rama por módulo, integrada a `develop` mediante pull request
 
-Los mensajes de commit siguen el formato `tipo: descripción` (`feat`, `fix`, `docs`, `test`, `chore`).
-
-## Instalación
-
-Las instrucciones para ejecutar el backend y el frontend se agregarán conforme se creen.
+Los mensajes de commit siguen el formato `tipo(módulo): descripción` (`feat`, `fix`, `docs`, `test`, `chore`).

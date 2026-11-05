@@ -1,12 +1,17 @@
 {
     "openapi": "3.1.2",
     "info": {
-        "title": "Laravel",
+        "title": "MesaLista",
         "version": "0.0.1"
     },
     "servers": [
         {
             "url": "http://localhost:8000/api"
+        }
+    ],
+    "security": [
+        {
+            "http": []
         }
     ],
     "paths": {
@@ -72,7 +77,8 @@
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
                     }
-                }
+                },
+                "security": []
             }
         },
         "/auth/me": {
@@ -833,7 +839,8 @@
                             }
                         }
                     }
-                }
+                },
+                "security": []
             }
         },
         "/auth/google/callback": {
@@ -855,7 +862,8 @@
                             }
                         }
                     }
-                }
+                },
+                "security": []
             }
         },
         "/menu": {
@@ -1218,6 +1226,12 @@
         }
     },
     "components": {
+        "securitySchemes": {
+            "http": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        },
         "schemas": {
             "BitacoraResource": {
                 "type": "object",

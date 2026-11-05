@@ -16,6 +16,8 @@ class GoogleAuthController extends Controller
 {
     /**
      * Envía al usuario a la pantalla de inicio de sesión de Google.
+     *
+     * @unauthenticated
      */
     public function redirect(): RedirectResponse
     {
@@ -26,6 +28,8 @@ class GoogleAuthController extends Controller
      * Google regresa aquí después de iniciar sesión.
      * Si el correo pertenece a un administrador activo, se genera un token
      * y se redirige al frontend con el token en el fragmento de la URL.
+     *
+     * @unauthenticated
      */
     public function callback(): RedirectResponse
     {
