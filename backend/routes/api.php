@@ -3,11 +3,14 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BitacoraController;
 use App\Http\Controllers\Api\CategoriaController;
+use App\Http\Controllers\Api\CroquisController;
 use App\Http\Controllers\Api\EmpleadoController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\MenuController;
+use App\Http\Controllers\Api\MesaController;
 use App\Http\Controllers\Api\ProductoController;
 use App\Http\Controllers\Api\RolController;
+use App\Http\Controllers\Api\ZonaController;
 use App\Models\Rol;
 use Illuminate\Support\Facades\Route;
 
@@ -31,9 +34,10 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-    // Todo el personal: consulta del menú
+    // Todo el personal: consulta del menú y del croquis
     Route::middleware('rol:'.implode(',', [Rol::CAJERO, Rol::MESERO, Rol::COCINA]))->group(function () {
         Route::get('menu', MenuController::class);
+        Route::get('croquis', [CroquisController::class, 'index']);
 
         Route::get('categorias', [CategoriaController::class, 'index']);
         Route::get('categorias/{categoria}', [CategoriaController::class, 'show']);
@@ -56,5 +60,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::apiResource('productos', ProductoController::class)
             ->except(['index', 'show']);
+
+        // Editor del croquis
+        Route::put('croquis', [CroquisController::class, 'guardar']);
+        Route::apiResource('zonas', ZonaController::class)->only(['store', 'update', 'destroy']);
+        Route::apiResource('mesas', MesaController::class);
     });
 });
