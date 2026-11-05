@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\DB;
  */
 class CroquisService
 {
+    public function __construct(private TiempoRealService $tiempoReal)
+    {
+    }
+
     /**
      * Zonas con sus mesas activas y, si están ocupadas, la cuenta en curso.
      */
@@ -42,5 +46,7 @@ class CroquisService
                 Mesa::whereKey($mesa['id'])->update(Arr::only($mesa, ['zona_id', 'x', 'y', 'ancho', 'alto', 'rotacion']));
             }
         });
+
+        $this->tiempoReal->emitir('croquis.actualizado', ['origen' => 'editor']);
     }
 }
