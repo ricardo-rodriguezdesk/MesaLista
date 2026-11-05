@@ -101,6 +101,7 @@ erDiagram
         int alto
         int rotacion
         string estado "libre, ocupada, cuenta_pedida"
+        boolean activo "quitar del croquis sin borrar historial"
     }
 
     cuentas {
@@ -166,7 +167,8 @@ erDiagram
         string email
         string xml_path "Supabase Storage"
         string pdf_path "Supabase Storage"
-        string estado "timbrada, cancelada, error"
+        string estado "pendiente, timbrada, cancelada, error"
+        text error "respuesta del PAC si falla"
         timestamp created_at
     }
 
@@ -191,6 +193,9 @@ erDiagram
 - **Croquis con coordenadas.** Zonas y mesas guardan `x`, `y`, `ancho`, `alto` (y `rotacion` en mesas) para dibujar el plano y moverlas arrastrando.
 - **Estado de mesas y platillos en columnas propias.** Supabase Realtime escucha los cambios en `mesas.estado` y `cuenta_detalle.estado` para actualizar todas las pantallas al instante.
 - **Datos fiscales del SAT en productos.** `clave_prod_serv` y `clave_unidad` son obligatorios para timbrar el CFDI 4.0.
+- **Mesas que se desactivan.** `mesas.activo` permite quitar una mesa del croquis sin borrar las cuentas que tuvo; por la misma razón, no se puede eliminar una mesa, cuenta o producto con historial.
+- **Estados controlados por la base de datos.** Los campos `estado`, `tipo`, `forma` y `metodo` son `enum`: PostgreSQL rechaza cualquier valor fuera de la lista.
+- **Facturas con seguimiento de errores.** Una factura nace como `pendiente`; si el PAC rechaza el timbrado se guarda su respuesta en `error` para poder corregir los datos y reintentar.
 - **Bitácora con JSON.** Guarda los valores antes y después del cambio para saber quién canceló un platillo o modificó un precio, y cuándo.
 
 Laravel crea además sus tablas internas (`personal_access_tokens` de Sanctum, `migrations`, `cache`, `jobs`).
