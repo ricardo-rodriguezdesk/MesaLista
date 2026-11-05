@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BitacoraController;
 use App\Http\Controllers\Api\CategoriaController;
+use App\Http\Controllers\Api\CocinaController;
 use App\Http\Controllers\Api\CroquisController;
 use App\Http\Controllers\Api\CuentaController;
 use App\Http\Controllers\Api\EmpleadoController;
@@ -54,6 +55,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('cuentas/{cuenta}', [CuentaController::class, 'show']);
         Route::post('cuentas/{cuenta}/platillos', [CuentaController::class, 'agregarPlatillos']);
         Route::post('cuentas/{cuenta}/pedir-cuenta', [CuentaController::class, 'pedirCuenta']);
+        Route::patch('platillos/{detalle}/entregar', [CocinaController::class, 'entregar']);
+    });
+
+    // Cocina
+    Route::middleware('rol:'.Rol::COCINA)->group(function () {
+        Route::get('cocina/pedidos', [CocinaController::class, 'index']);
+        Route::patch('cocina/pedidos/{detalle}', [CocinaController::class, 'actualizar']);
     });
 
     // Solo administrador
