@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\EmpleadoController;
 use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Api\RolController;
+use App\Models\Rol;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,4 +23,13 @@ Route::prefix('auth')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);
     });
+});
+
+// Solo administrador
+Route::middleware(['auth:sanctum', 'rol:'.Rol::ADMINISTRADOR])->group(function () {
+    Route::get('roles', RolController::class);
+
+    // DELETE /api/empleados/{id} desactiva al empleado (no lo borra)
+    Route::apiResource('empleados', EmpleadoController::class)
+        ->parameters(['empleados' => 'usuario']);
 });
