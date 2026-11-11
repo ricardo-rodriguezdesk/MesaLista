@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AbrirCuentaRequest;
 use App\Http\Requests\AgregarPlatillosRequest;
+use App\Http\Requests\CancelarRequest;
 use App\Http\Resources\CuentaResource;
 use App\Models\Cuenta;
+use App\Models\CuentaDetalle;
 use App\Services\ComandaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -68,6 +70,26 @@ class CuentaController extends Controller
     public function pedirCuenta(Cuenta $cuenta): CuentaResource
     {
         return new CuentaResource($this->cargar($this->comandas->pedirCuenta($cuenta)));
+    }
+
+    /**
+     * Cancela un platillo con su motivo. Queda registrado en la bitácora.
+     */
+    public function cancelarPlatillo(CancelarRequest $request, CuentaDetalle $detalle): CuentaResource
+    {
+        $cuenta = $this->comandas->cancelarPlatillo($detalle, $request->user(), $request->validated('motivo'));
+
+        return new CuentaResource($this->cargar($cuenta));
+    }
+
+    /**
+     * Cancela una cuenta abierta por error (sin platillos activos) y libera la mesa.
+     */
+    public function cancelarCuenta(CancelarRequest $request, Cuenta $cuenta): CuentaResource
+    {
+        $cuenta = $this->comandas->cancelarCuenta($cuenta, $request->user(), $request->validated('motivo'));
+
+        return new CuentaResource($this->cargar($cuenta));
     }
 
     private function cargar(Cuenta $cuenta): Cuenta
