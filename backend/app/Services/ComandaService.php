@@ -6,6 +6,7 @@ use App\Models\Cuenta;
 use App\Models\CuentaDetalle;
 use App\Models\Mesa;
 use App\Models\Producto;
+use App\Models\Rol;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -17,8 +18,10 @@ use Illuminate\Validation\ValidationException;
  */
 class ComandaService
 {
-    public function __construct(private IvaService $iva)
-    {
+    public function __construct(
+        private IvaService $iva,
+        private BitacoraService $bitacora,
+    ) {
     }
 
     public function abrirCuenta(Usuario $mesero, int $mesaId, int $comensales): Cuenta
@@ -109,6 +112,82 @@ class ComandaService
 
             $cuenta->update(['estado' => Cuenta::CUENTA_PEDIDA]);
             $cuenta->mesa->update(['estado' => Mesa::CUENTA_PEDIDA]);
+
+            return $cuenta;
+        });
+    }
+
+    /**
+     * Cancela un platillo (RF-15) y lo registra en la bitácora con su motivo.
+     * Un platillo pendiente lo puede cancelar el mesero o la caja; si la cocina
+     * ya empezó a prepararlo, solo el administrador.
+     */
+    public function cancelarPlatillo(CuentaDetalle $detalle, Usuario $usuario, string $motivo): Cuenta
+    {
+        return DB::transaction(function () use ($detalle, $usuario, $motivo) {
+            $detalle = CuentaDetalle::with(['cuenta', 'producto'])->whereKey($detalle->id)->lockForUpdate()->firstOrFail();
+            $cuenta = $detalle->cuenta;
+
+            if (! in_array($cuenta->estado, [Cuenta::ABIERTA, Cuenta::CUENTA_PEDIDA], true)) {
+                $this->error('cuenta', 'La cuenta ya está cerrada.');
+            }
+
+            if ($detalle->estado === CuentaDetalle::CANCELADO) {
+                $this->error('platillo', 'El platillo ya estaba cancelado.');
+            }
+
+            if ($detalle->estado !== CuentaDetalle::PENDIENTE && ! $usuario->tieneRol(Rol::ADMINISTRADOR)) {
+                abort(403, 'La cocina ya empezó a preparar este platillo. Solo el administrador puede cancelarlo.');
+            }
+
+            $antes = [
+                'producto' => $detalle->producto->nombre,
+                'cantidad' => $detalle->cantidad,
+                'importe' => round((float) $detalle->precio_unitario * $detalle->cantidad, 2),
+                'estado' => $detalle->estado,
+            ];
+
+            $detalle->update(['estado' => CuentaDetalle::CANCELADO]);
+
+            $this->bitacora->registrar(
+                'cancelar_platillo',
+                $detalle,
+                $antes,
+                ['estado' => CuentaDetalle::CANCELADO, 'motivo' => $motivo],
+                $usuario->id,
+            );
+
+            return $this->recalcular($cuenta);
+        });
+    }
+
+    /**
+     * Cancela una cuenta abierta por error. Solo se permite si no tiene
+     * platillos activos; la mesa vuelve a quedar libre.
+     */
+    public function cancelarCuenta(Cuenta $cuenta, Usuario $usuario, string $motivo): Cuenta
+    {
+        return DB::transaction(function () use ($cuenta, $usuario, $motivo) {
+            $cuenta = Cuenta::whereKey($cuenta->id)->lockForUpdate()->firstOrFail();
+
+            if (! in_array($cuenta->estado, [Cuenta::ABIERTA, Cuenta::CUENTA_PEDIDA], true)) {
+                $this->error('cuenta', 'La cuenta ya está cerrada.');
+            }
+
+            if ($cuenta->detalles()->where('estado', '!=', CuentaDetalle::CANCELADO)->exists()) {
+                $this->error('cuenta', 'La cuenta tiene platillos. Cancélalos primero.');
+            }
+
+            $cuenta->update(['estado' => Cuenta::CANCELADA, 'cerrada_en' => now()]);
+            $cuenta->mesa->update(['estado' => Mesa::LIBRE]);
+
+            $this->bitacora->registrar(
+                'cancelar_cuenta',
+                $cuenta,
+                ['estado' => Cuenta::ABIERTA, 'mesa' => $cuenta->mesa->nombre],
+                ['estado' => Cuenta::CANCELADA, 'motivo' => $motivo],
+                $usuario->id,
+            );
 
             return $cuenta;
         });
